@@ -35,10 +35,15 @@ def save_obj_file(path, verts, faces):
     pmesh = pymesh.form_mesh(verts, faces)
     pymesh.save_mesh(path, pmesh)
 
-def create_sphere(n_subdivide=3, fix_normals=True):
+def create_sphere(n_subdivide=8, fix_normals=True):
     # 3 makes 642 verts, 1280 faces,
     # 4 makes 2562 verts, 5120 faces
-    verts, faces = meshzoo.iso_sphere(n_subdivide)
+    #change made by dorsa:
+    # verts, faces = meshzoo.iso_sphere(n_subdivide)
+    verts, faces = meshzoo.icosa_sphere(n_subdivide)
+    #change made by dorsa:
+    print("number of verts {} , number of faces {}".format(verts.shape, faces.shape))
+
     if fix_normals:
         v0 = verts[faces[:,0], :]
         v1 = verts[faces[:,1], :]

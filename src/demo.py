@@ -28,6 +28,7 @@ import os.path as osp
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
+import imageio
 import torch
 
 from .nnutils import predictor as pred_util
@@ -77,6 +78,21 @@ def visualize(img, outputs, renderer):
     vp3 = renderer.diff_vp(
         vert, cam, angle=60, axis=[1, 0, 0], texture=texture)[0]
 
+    #change made by dorsa: (make gif)
+    rends = []
+    # rends_tex = []
+    for angle in np.linspace(0,360,36,endpoint=False):
+
+        default_cam = torch.tensor([0.5,0,0,1,1,0,0], dtype=torch.float, device=renderer.default_cam.device)
+        axis=[0,0,1.7]
+        rend_t = renderer.rotated(outputs['verts'], deg=angle, axis=axis, cam=default_cam)  # rend_t: H,W,C
+        rend_t = rend_t.squeeze(0)
+        #     rend_tex = renderer.rotated(outputs['verts'], deg=angle, axis=axis, cam=default_cam, texture=textures_nmr[i])  # rend_t: H,W,C
+        rends.append(rend_t)
+        #     rend_tex = rend_tex[:,:,::-1]
+        #     rends_tex.append(rend_tex)
+    imageio.mimsave('predicted_mesh.gif',rends,fps=6)
+
     img = np.transpose(img, (1, 2, 0))
     plt.ion()
     plt.figure(1)
@@ -116,7 +132,8 @@ def main(_):
 
     predictor = pred_util.MeshPredictor(opts)
     outputs = predictor.predict(batch)
-
+    #change made by dorsa:
+    torch.save(outputs['cam_pred'],"cam_pred.pt")
     # Texture may have been originally sampled for SoftRas. Resample texture from uv-image for NMR
     outputs['texture'] = predictor.resample_texture_nmr(outputs['uv_image'])
 

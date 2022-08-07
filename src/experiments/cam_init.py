@@ -27,6 +27,8 @@ torch.backends.cudnn.benchmark = True
 from ..data import cub as cub_data
 from ..data import imagenet as imagenet_data
 from ..data import json_dataset as json_data
+#change made by dorsa:
+from ..data import grape_dataset as grape_data # created grape_dataset.py imported here
 from ..data import p3d as p3d_data
 from ..nnutils import geom_utils, loss_utils, train_utils
 from ..nnutils.architecture import ShapeCamTexNet
@@ -37,10 +39,13 @@ from ..utils import image as image_utils
 from ..utils import mesh, visutil
 
 
-flags.DEFINE_string('dataset', 'cub', 'Dataset')
+# flags.DEFINE_string('dataset', 'cub', 'Dataset')
+#change made by dorsa:
+flags.DEFINE_string('dataset', 'grape', 'Dataset') # was 'cub' changed to 'grape')
 
 flags.DEFINE_boolean('perspective', False, 'whether to use strong perrspective projection')
-flags.DEFINE_string('shape_path', 'birds/cmr_mean_birds_shape.npy', 'Path to initial mean shape')
+#change made by dorsa:
+flags.DEFINE_string('shape_path', '', 'Path to initial mean shape')
 
 flags.DEFINE_integer('num_multipose', -1, 'num_multipose_az * num_multipose_el')
 flags.DEFINE_integer('num_multipose_az', 8, 'Number of camera pose hypothesis bins (along azimuth)')
@@ -404,6 +409,8 @@ class MultiplexOptimizer(train_utils.Trainer):
             dataloader_fn =  p3d_data.data_loader
         elif opts.dataset == 'json':
             dataloader_fn =  json_data.data_loader
+        elif opts.dataset == 'grape':
+            dataloader_fn =  grape_data.data_loader
         else:
             raise ValueError('Unknown dataset %d!' % opts.dataset)
 

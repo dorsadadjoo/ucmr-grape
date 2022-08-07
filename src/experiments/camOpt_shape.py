@@ -30,6 +30,8 @@ from ..data import cub as cub_data
 from ..data import imagenet as imagenet_data
 from ..data import json_dataset as json_data
 from ..data import p3d as p3d_data
+#change made by dorsa:
+from ..data import grape_dataset as grape_data # created grape_dataset.py imported here
 from ..nnutils import geom_utils, loss_utils, train_utils
 from ..nnutils.architecture import ShapeCamTexNet
 from ..nnutils.nmr import NeuralRenderer_pytorch as NeuralRenderer
@@ -40,8 +42,9 @@ from ..utils import mesh
 from ..utils import misc as misc_utils
 from ..utils import visutil
 
-
-flags.DEFINE_string('dataset', 'cub', 'yt (YouTube), or cub, or yt_filt (Youtube, refined)')
+#change made by dorsa:
+flags.DEFINE_string('dataset', 'grape', 'yt (YouTube), or cub, or yt_filt (Youtube, refined)')
+# flags.DEFINE_string('dataset', 'cub', 'yt (YouTube), or cub, or yt_filt (Youtube, refined)')
 # Weights:
 flags.DEFINE_float('rend_mask_loss_wt', 0, 'rendered mask loss weight')
 flags.DEFINE_float('deform_loss_wt', 0, 'reg to deformation')
@@ -85,6 +88,8 @@ flags.DEFINE_boolean('laplacianDeltaV', False, 'Smooth DeltaV instead of V in la
 flags.DEFINE_float('optimizeAzRange', 30, 'Optimize Azimuth range (degrees')
 flags.DEFINE_float('optimizeElRange', 30, 'Optimize Elevation range (degrees')
 flags.DEFINE_float('optimizeCrRange', 60, 'Optimize CycloRotation range (degrees')
+#change made by dorsa:
+flags.DEFINE_boolean('fine_tune', False, 'Fine-tune mode during testing and use predicted camera pose')
 
 curr_path = osp.dirname(osp.abspath(__file__))
 cache_path = osp.join(curr_path, '../../', 'cachedir')
@@ -574,6 +579,9 @@ class ShapeTrainer(train_utils.Trainer):
             dataloader_fn = p3d_data.data_loader
         elif opts.dataset == 'json':
             dataloader_fn = json_data.data_loader
+        #change made by dorsa:
+        elif opts.dataset == 'grape':
+            dataloader_fn =  grape_data.data_loader     
         else:
             raise ValueError('Unknown dataset %d!' % opts.dataset)
 
@@ -594,6 +602,11 @@ class ShapeTrainer(train_utils.Trainer):
 
         # GT camera pose (from sfm_pose) for debugging
         gt_camera_pose = batch['sfm_pose'].float()
+
+        #change made by dorsa:
+        if opts.fine_tune:
+            gt_camera_pose = torch.load("cam_pred.pt")
+            gt_camera_pose = gt_camera_pose.expand(img.shape[0],7)
 
         N, h, w = masks.shape
         assert(img.shape[0] == N)
@@ -812,8 +825,13 @@ class ShapeTrainer(train_utils.Trainer):
                         default_cam = None
                         axis=[0,-1,1.7]
                     else:
-                        default_cam = torch.tensor([0.5,0,0,1,1,0,0], dtype=torch.float, device=self.vis_rend.default_cam.device)
-                        axis=[0,0,1.7]
+                    #change made by dorsa
+                        if opts.fine_tune:
+                            default_cam = torch.load("cam_pred.pt").squeeze(0)
+                            axis=[-1,0,1.7]
+                        else:
+                            default_cam = torch.tensor([0.5,0,0,1,1,0,0], dtype=torch.float, device=self.vis_rend.default_cam.device)
+                            axis=[0,0,1.7]
                     rend_t = self.vis_rend.rotated(pred_v[i], deg=angle, axis=axis, cam=default_cam)  # rend_t: H,W,C
                     if opts.pred_texture:
                         rend_tex = self.vis_rend.rotated(pred_v[i], deg=angle, axis=axis, cam=default_cam, texture=textures_nmr[i])  # rend_t: H,W,C

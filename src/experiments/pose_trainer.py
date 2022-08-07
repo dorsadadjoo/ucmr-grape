@@ -28,6 +28,8 @@ from ..data import cub as cub_data
 from ..data import imagenet as imagenet_data
 from ..data import json_dataset as json_data
 from ..data import p3d as p3d_data
+#change made by dorsa:
+from ..data import grape_dataset as grape_data
 from ..nnutils import geom_utils, loss_utils, train_utils
 from ..nnutils.architecture import ShapeCamTexNet
 from ..utils import bird_vis
@@ -35,7 +37,7 @@ from ..utils import image as image_utils
 from ..utils import mesh
 from ..utils import visutil
 
-flags.DEFINE_string('dataset', 'cub', 'yt (YouTube), or cub, or yt_filt (Youtube, refined)')
+flags.DEFINE_string('dataset', 'grape', 'yt (YouTube), or cub, or yt_filt (Youtube, refined)')
 
 # Weights:
 flags.DEFINE_float('rend_mask_loss_wt', 0, 'rendered mask loss weight')
@@ -159,6 +161,8 @@ class PoseTrainer(train_utils.Trainer):
             dataloader_fn =  p3d_data.data_loader
         elif opts.dataset == 'json':
             dataloader_fn =  json_data.data_loader
+        elif opts.dataset == 'grape':
+            dataloader_fn =  grape_data.data_loader
         else:
             raise ValueError('Unknown dataset %d!' % opts.dataset)
 

@@ -14,6 +14,7 @@ from ..nnutils.nmr import SoftRas
 from ..utils import bird_vis
 from ..utils import image as image_utils
 from ..utils import mesh
+import meshio
 
 # These options are off by default, but used for some ablations reported.
 flags.DEFINE_boolean('ignore_pred_delta_v', False, 'Use only mean shape for prediction')
@@ -99,6 +100,10 @@ class MeshPredictor(object):
 
         # input_img is the input to resnet
         input_img_tensor = batch['img'].type(torch.FloatTensor).cuda()
+
+        #change made by dorsa:
+        input_img_tensor = input_img_tensor.cpu()
+
         for b in range(input_img_tensor.size(0)):
             input_img_tensor[b] = self.resnet_transform(input_img_tensor[b])
 
@@ -194,7 +199,10 @@ class MeshPredictor(object):
             outputs['uv_image'] = self.uv_images.detach()
             if self.opts.texture_predict_flow:
                 outputs['uv_flow'] = self.uv_flows.detach()
-
+        #change made by dorsa:
+        mesh = meshio.Mesh(outputs['verts'].squeeze(0).cpu(),{"triangle": self.faces.cpu()})
+        mesh.write("predicted_mesh.obj")
+        #end change
         return outputs
 
     def resample_texture_nmr(self, uv_image):

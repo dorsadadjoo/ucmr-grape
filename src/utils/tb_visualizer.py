@@ -4,6 +4,7 @@ import os.path as osp
 import numpy as np
 import tensorboardX
 import torch
+import cv2
 
 from .mesh import save_obj_file
 
@@ -105,9 +106,17 @@ class TBVisualizer():
             self.viz.add_text(label,text,global_step=global_step)
 
     # |visuals|: dictionary of images to display or save
-    def display_current_results(self, visuals, global_step, save_meshes=False):
+    def display_current_results(self, visuals, global_step, save_meshes=True):
         if 'img' in visuals:
             self.plot_images(visuals['img'], global_step)
+            #change made by dorsa:
+            # print("visuals['img'].keys()",visuals['img'].keys())
+            if '0/0_best' in visuals['img']:    
+                cv2.imwrite('out/for_gif/0/%d.png'%global_step,visuals['img']['0/0_best'])
+                cv2.imwrite('out/for_gif/1/%d.png'%global_step,visuals['img']['1/0_best'])
+                # torch.save(visuals['img']['0/perturbation'],'out/for_gif/0/%d.pt'%global_step)
+                # torch.save(visuals['img']['1/perturbation'],'out/for_gif/1/%d.pt'%global_step)
+            #end change
         if 'image' in visuals:
             self.plot_images(visuals['image'], global_step)
 

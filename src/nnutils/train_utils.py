@@ -52,7 +52,9 @@ flags.DEFINE_integer('save_epoch_freq', 2, 'save model every k epochs')
 
 ## Flags for visualization
 flags.DEFINE_integer('display_freq', 500, 'visuals logging frequency')
-flags.DEFINE_integer('display_freq_init', 50, 'visuals logging frequency (initially)')
+#change made by dorsa:
+# flags.DEFINE_integer('display_freq_init', 50, 'visuals logging frequency (initially)')
+flags.DEFINE_integer('display_freq_init', 1, 'visuals logging frequency (initially)')
 flags.DEFINE_integer('display_init_iter', 100, 'these initial iters log more frequently at display_freq_init')
 flags.DEFINE_boolean('display_visuals', True, 'whether to display images')
 flags.DEFINE_boolean('print_scalars', False, 'whether to print scalars')

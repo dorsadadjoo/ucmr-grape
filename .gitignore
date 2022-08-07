@@ -4,6 +4,14 @@ cachedir/
 cachedir/logs/
 cachedir/snapshots/
 .vscode/
+/data/
+/out/
+neural_renderer/
+neural_renderer/*
+PyMesh
+PyMesh/*
+SoftRas
+SoftRas/*
 
 # Mac stuff
 *.DS_Store
